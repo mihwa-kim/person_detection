@@ -68,6 +68,10 @@ def main(_argv):
         sigma = st.sidebar.slider('Sigma value for blurring:', min_value=0, max_value=100, value=10)
         FLAGS.confidence = st.sidebar.slider('Confidence threshold for detection:', min_value=0.0, max_value=1.0, value=0.5)
 
+        # Load the YOLO model
+        model = YOLO(FLAGS.weights)
+        class_list = [FLAGS.class_list]
+
         if uploaded_file is not None:
             image = Image.open(uploaded_file).convert("RGB")
             image = np.array(image)
@@ -78,10 +82,6 @@ def main(_argv):
                 st.image(image, caption='Uploaded Image', use_column_width=True)
 
             if st.sidebar.button('Detect People'):
-                # Load the YOLO model
-                model = YOLO(FLAGS.weights)
-                class_list = [FLAGS.class_list]
-
                 processed_image, mask, person_count = detect_people(image.copy(), model, class_list, FLAGS.confidence)
                 cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
                 if blur_background:
@@ -141,7 +141,7 @@ def main(_argv):
 
         st.subheader("Methodology")
         st.markdown("1. Dataset Preparation: The first step in the process was to prepare the dataset for training. In this case, the CrowdHuman dataset was used. This dataset is a large and rich dataset that contains images of people in various real-world scenarios, making it ideal for training an AI model to identify people in images.")
-        st.markdown("2. Model Selection and Training: The YOLOv8 (You Only Look Once version 8) model was chosen for this task. YOLOv8 is a state-of-the-art, real-time object detection system that has been widely used in similar tasks due to its speed and accuracy. The model was trained on the prepared CrowdHuman dataset.")
+        st.markdown("2. Model Selection and Training: The YOLOv5 (You Only Look Once version 5) model was chosen for this task. YOLOv5 is a state-of-the-art, real-time object detection system that has been widely used in similar tasks due to its speed and accuracy. The model was trained on the prepared CrowdHuman dataset.")
         st.markdown("3. Model Evaluation: After training, the model was evaluated to ensure it was accurately identifying people in images and could effectively separate them from the background.")
         st.markdown("4. Application Development: Once the model was trained and evaluated, it was integrated into an application prototype. Streamlit, a fast and easy-to-use open-source framework for building machine learning and data science web applications, was used for this purpose.")
         st.markdown("5. Testing and Iteration: The prototype was then tested to ensure it was working as expected. Feedback from these tests was used to make any necessary adjustments to the model or application.")

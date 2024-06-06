@@ -11,10 +11,7 @@ import urllib.request
 # Configurations
 CFG_MODEL_PATH = "best_yolov8nano.pt"
 CFG_ENABLE_URL_DOWNLOAD = True
-if CFG_ENABLE_URL_DOWNLOAD:
-    # Configure this if you set CFG_ENABLE_URL_DOWNLOAD to True
-    url = "https://archive.org/download/best_yolov8nano/best_yolov8nano.pt"
-# End of Configurations
+custom_model_path = st.sidebar.text_input("Enter custom model path", CFG_MODEL_PATH)
 
 # Custom CSS to change the sidebar background color
 st.markdown(
@@ -37,14 +34,14 @@ st.markdown(
 )
 
 @st.cache_resource
-def download_model():
-    if not os.path.exists(CFG_MODEL_PATH):
-        urllib.request.urlretrieve(url, CFG_MODEL_PATH)
+def download_model(url, path):
+    if not os.path.exists(path):
+        urllib.request.urlretrieve(url, path)
 
 @st.cache_resource
-def load_model():
+def load_model(model_path):
     try:
-        model = YOLO(CFG_MODEL_PATH)
+        model = YOLO(model_path)
         return model
     except Exception as e:
         st.error(f"Error loading model: {e}")
@@ -80,15 +77,16 @@ def blur_background_func(image, mask, kernel_size, sigma):
 
 def main():
     if CFG_ENABLE_URL_DOWNLOAD:
-        download_model()
+        download_model("https://archive.org/download/best_yolov8nano/best_yolov8nano.pt", CFG_MODEL_PATH)
     else:
-        if not os.path.exists(CFG_MODEL_PATH):
+        if not os.path.exists(custom_model_path):
             st.error('Model not found, please configure if you wish to download model from URL set `CFG_ENABLE_URL_DOWNLOAD = True`', icon="⚠️")
 
-    model = load_model()
+    model = load_model(custom_model_path)
     if model is None:
         return
 
+    global class_list
     class_list = ['body']
 
     st.set_page_config(page_title="FocusAI: People Detection and Background Blur", page_icon="👤", layout="wide")
@@ -164,40 +162,7 @@ def main():
         st.markdown("2. Model Selection and Training: The YOLOv5 (You Only Look Once version 5) model was chosen for this task. YOLOv5 is a state-of-the-art, real-time object detection system that has been widely used in similar tasks due to its speed and accuracy. The model was trained on the prepared CrowdHuman dataset.")
         st.markdown("3. Model Evaluation: After training, the model was evaluated to ensure it was accurately identifying people in images and could effectively separate them from the background.")
         st.markdown("4. Application Development: Once the model was trained and evaluated, it was integrated into an application prototype. Streamlit, a fast and easy-to-use open-source framework for building machine learning and data science web applications, was used for this purpose.")
-        st.markdown("5. Testing and Iteration: The prototype was then tested to ensure it was working as expected. Feedback from these tests was used to make any necessary adjustments to the model or application.")
-        st.markdown("6. Deployment: Once testing was complete and any necessary adjustments were made, the application was ready for deployment.")
+        st.markdown("5. Testing and Iteration: The prototype was then tested to ensure it was working as expected. Feedback from these tests was used to make any necessary improvements and refinements.")
 
-        st.subheader("Applications")
-        st.markdown("Security Systems: In security applications, the model can be used to protect the identities of individuals in the background of surveillance footage, focusing only on the subjects of interest.")
-        st.markdown("Augmented Reality (AR): In AR applications, this model can be used to separate real-world objects from their backgrounds, allowing for more immersive and realistic interactions with digital content.")
-        st.markdown("Photography and Videography: The model can be used to automatically create a depth-of-field effect, or ‘bokeh’, which is a popular technique in photography and videography. This effect helps to draw attention to the subject by blurring the background.")
-
-    if curr_state == states[0] and uploaded_file is None:
-        a_c1, a_c2, a_c3 = st.columns(3)
-        a_c2.subheader("Camera Feed")
-        picture = a_c2.camera_input("Take a picture", label_visibility="collapsed")
-
-        if picture is not None:
-            file_bytes = np.asarray(bytearray(picture.read()), dtype=np.uint8)
-            picture = cv2.imdecode(file_bytes, 1)
-            picture = cv2.cvtColor(picture, cv2.COLOR_BGR2RGB)  # Convert to RGB
-
-            b_c1, b_c2 = st.columns(2)
-            processed_image, mask, person_count = detect_people(picture.copy(), model)
-            cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
-            blurred_image = blur_background_func(picture.copy(), mask, kernel_size, sigma)
-            cv2.imwrite('blurred_image.jpg', cv2.cvtColor(blurred_image, cv2.COLOR_RGB2BGR))
-            image_comparison(
-                img1='processed_image.jpg',
-                img2='blurred_image.jpg',
-                label1="Detection",
-                label2="FocusAI",
-                width=1200,
-                starting_position=50,
-                show_labels=True,
-                make_responsive=True,
-                in_memory=True,
-            )
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

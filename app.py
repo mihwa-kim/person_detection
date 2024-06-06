@@ -6,9 +6,10 @@ import pandas as pd
 from absl import app, flags, logging
 from absl.flags import FLAGS
 from streamlit_image_comparison import image_comparison
+from ultralytics import YOLO
 
 # Define flags
-flags.DEFINE_string('weights', './best_yolov8nano.pt', 'path to weights file')
+flags.DEFINE_string('weights', 'best_yolov8nano.pt', 'path to weights file')
 flags.DEFINE_float('confidence', 0.5, 'confidence threshold for detections')
 flags.DEFINE_string('class_list', 'body', 'list of classes to detect')
 
@@ -77,7 +78,11 @@ def main(_argv):
                 st.image(image, caption='Uploaded Image', use_column_width=True)
 
             if st.sidebar.button('Detect People'):
-                processed_image, mask, person_count = detect_people(image.copy(), model, FLAGS.class_list, FLAGS.confidence)
+                # Load the YOLO model
+                model = YOLO(FLAGS.weights)
+                class_list = [FLAGS.class_list]
+
+                processed_image, mask, person_count = detect_people(image.copy(), model, class_list, FLAGS.confidence)
                 cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
                 if blur_background:
                     blurred_image = blur_background_func(image.copy(), mask, kernel_size, sigma)

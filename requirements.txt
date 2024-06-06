@@ -1,0 +1,7 @@
+streamlit
+pillow
+numpy
+opencv-python 
+pandas 
+ultralytics 
+streamlit_image_comparison

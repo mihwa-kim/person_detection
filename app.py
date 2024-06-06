@@ -1,55 +1,20 @@
-import os
 import streamlit as st
 from PIL import Image
 import numpy as np
 import cv2
 import pandas as pd
-from ultralytics import YOLO
+from absl import app, flags, logging
+from absl.flags import FLAGS
 from streamlit_image_comparison import image_comparison
-import urllib.request
 
-# Configurations
-CFG_MODEL_PATH = "best_yolov8nano.pt"
-CFG_ENABLE_URL_DOWNLOAD = True
-custom_model_path = st.sidebar.text_input("Enter custom model path", CFG_MODEL_PATH)
+# Define flags
+flags.DEFINE_string('weights', './best_yolov8nano.pt', 'path to weights file')
+flags.DEFINE_float('confidence', 0.5, 'confidence threshold for detections')
+flags.DEFINE_string('class_list', 'body', 'list of classes to detect')
 
-# Custom CSS to change the sidebar background color
-st.markdown(
-    """
-    <style>
-    .css-1d391kg {  /* This class may need to be updated if Streamlit changes their class names */
-        background-color: black;
-        color: white;
-    }
-    .css-17eq0hr {
-        background-color: black;
-        color: white;
-    }
-    .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3, .css-1d391kg h4, .css-1d391kg h5, .css-1d391kg h6 {
-        color: white;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-@st.cache_resource
-def download_model(url, path):
-    if not os.path.exists(path):
-        urllib.request.urlretrieve(url, path)
-
-@st.cache_resource
-def load_model(model_path):
-    try:
-        model = YOLO(model_path)
-        return model
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
-        return None
-
-def detect_people(image, model):
+def detect_people(image, model, class_list, confidence):
     image_color = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    results = model.predict(image)
+    results = model.predict(image, conf=confidence)
     boxes = results[0].boxes.data
     px = pd.DataFrame(boxes.cpu()).astype("float")
 
@@ -75,20 +40,8 @@ def blur_background_func(image, mask, kernel_size, sigma):
     final_image = cv2.add(focused_area, background)
     return final_image
 
-def main():
-    if CFG_ENABLE_URL_DOWNLOAD:
-        download_model("https://archive.org/download/best_yolov8nano/best_yolov8nano.pt", CFG_MODEL_PATH)
-    else:
-        if not os.path.exists(custom_model_path):
-            st.error('Model not found, please configure if you wish to download model from URL set `CFG_ENABLE_URL_DOWNLOAD = True`', icon="⚠️")
-
-    model = load_model(custom_model_path)
-    if model is None:
-        return
-
-    global class_list
-    class_list = ['body']
-
+# Streamlit interface
+def main(_argv):
     st.set_page_config(page_title="FocusAI: People Detection and Background Blur", page_icon="👤", layout="wide")
 
     states = ['FaceFleet', 'About Us']
@@ -98,7 +51,6 @@ def main():
     img = Image.open('logo.jpg').convert("RGB")
     st.sidebar.image(img, caption='', use_column_width=True)
 
-    # Create two columns
     col1, col2 = st.sidebar.columns(2)
     if col1.button('&nbsp;&nbsp;&nbsp;&nbsp;FocusAI&nbsp;&nbsp;&nbsp;&nbsp;', key='FocusAI'):
         curr_state = states[0]
@@ -107,18 +59,16 @@ def main():
 
     st.sidebar.markdown('---')
 
-    processed_image = None
-    blurred_image = None
-
     if curr_state == states[0]:
         st.sidebar.title('Quick start:')
         uploaded_file = st.sidebar.file_uploader("Upload Image", type=["jpg", "png"], label_visibility="collapsed")
         blur_background = st.sidebar.checkbox("Blur Background Without Boxes", value=False)
         kernel_size = st.sidebar.slider('Kernel size for blurring:', min_value=3, max_value=99, value=21, step=2)
         sigma = st.sidebar.slider('Sigma value for blurring:', min_value=0, max_value=100, value=10)
+        FLAGS.confidence = st.sidebar.slider('Confidence threshold for detection:', min_value=0.0, max_value=1.0, value=0.5)
 
         if uploaded_file is not None:
-            image = Image.open(uploaded_file).convert("RGB")  # Ensure the image is in RGB format
+            image = Image.open(uploaded_file).convert("RGB")
             image = np.array(image)
             cv2.imwrite('original_image.jpg', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
             u_col1, u_col2, u_col3 = st.columns(3)
@@ -127,7 +77,7 @@ def main():
                 st.image(image, caption='Uploaded Image', use_column_width=True)
 
             if st.sidebar.button('Detect People'):
-                processed_image, mask, person_count = detect_people(image.copy(), model)
+                processed_image, mask, person_count = detect_people(image.copy(), model, FLAGS.class_list, FLAGS.confidence)
                 cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
                 if blur_background:
                     blurred_image = blur_background_func(image.copy(), mask, kernel_size, sigma)
@@ -162,7 +112,16 @@ def main():
         st.markdown("2. Model Selection and Training: The YOLOv5 (You Only Look Once version 5) model was chosen for this task. YOLOv5 is a state-of-the-art, real-time object detection system that has been widely used in similar tasks due to its speed and accuracy. The model was trained on the prepared CrowdHuman dataset.")
         st.markdown("3. Model Evaluation: After training, the model was evaluated to ensure it was accurately identifying people in images and could effectively separate them from the background.")
         st.markdown("4. Application Development: Once the model was trained and evaluated, it was integrated into an application prototype. Streamlit, a fast and easy-to-use open-source framework for building machine learning and data science web applications, was used for this purpose.")
-        st.markdown("5. Testing and Iteration: The prototype was then tested to ensure it was working as expected. Feedback from these tests was used to make any necessary improvements and refinements.")
+        st.markdown("5. Testing and Iteration: The prototype was then tested to ensure it was working as expected. Feedback from these tests was used to make any necessary adjustments to the model or application.")
+        st.markdown("6. Deployment: Once testing was complete and any necessary adjustments were made, the application was ready for deployment.")
 
-if __name__ == "__main__":
-    main()
+        st.subheader("Applications")
+        st.markdown("Security Systems: In security applications, the model can be used to protect the identities of individuals in the background of surveillance footage, focusing only on the subjects of interest.")
+        st.markdown("Augmented Reality (AR): In AR applications, this model can be used to separate real-world objects from their backgrounds, allowing for more immersive and realistic interactions with digital content.")
+        st.markdown("Photography and Videography: The model can be used to automatically create a depth-of-field effect, or ‘bokeh’, which is a popular technique in photography and videography. This effect helps to draw attention to the subject by blurring the background.")
+
+if __name__ == '__main__':
+    try:
+        app.run(main)
+    except SystemExit:
+        pass

@@ -53,9 +53,9 @@ def main(_argv):
     st.sidebar.image(img, caption='', use_column_width=True)
 
     col1, col2 = st.sidebar.columns(2)
-    if col1.button('&nbsp;&nbsp;&nbsp;&nbsp;FocusAI&nbsp;&nbsp;&nbsp;&nbsp;', key='FocusAI'):
+    if col1.button('FocusAI', key='FocusAI'):
         curr_state = states[0]
-    if col2.button('&nbsp;&nbsp;&nbsp;&nbsp;About Us&nbsp;&nbsp;&nbsp;&nbsp;', key='About Us'):
+    if col2.button('About Us', key='About Us'):
         curr_state = states[1]
 
     st.sidebar.markdown('---')

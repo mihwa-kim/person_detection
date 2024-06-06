@@ -7,3 +7,4 @@ absl-py==1.2.0
 tensorflow==2.9.1
 torch==1.12.1
 streamlit-image-comparison==0.0.3
+ultralytics==8.0.0

@@ -7,3 +7,4 @@ absl-py
 torch
 streamlit-image-comparison
 ultralytics
+dill

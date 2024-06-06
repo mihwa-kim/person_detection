@@ -43,7 +43,12 @@ def download_model():
 
 @st.cache_resource
 def load_model():
-    return YOLO(CFG_MODEL_PATH)
+    try:
+        model = YOLO(CFG_MODEL_PATH)
+        return model
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
 
 def detect_people(image, model):
     image_color = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -81,6 +86,9 @@ def main():
             st.error('Model not found, please configure if you wish to download model from URL set `CFG_ENABLE_URL_DOWNLOAD = True`', icon="⚠️")
 
     model = load_model()
+    if model is None:
+        return
+
     class_list = ['body']
 
     st.set_page_config(page_title="FocusAI: People Detection and Background Blur", page_icon="👤", layout="wide")

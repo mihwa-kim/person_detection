@@ -4,9 +4,9 @@ from PIL import Image
 import numpy as np
 import cv2
 import pandas as pd
-from ultralytics import YOLO  # Assuming YOLO from ultralytics is used
+from ultralytics import YOLO
 from streamlit_image_comparison import image_comparison
-import wget
+import urllib.request
 
 # Configurations
 CFG_MODEL_PATH = "best_yolov8nano.pt"
@@ -39,7 +39,7 @@ st.markdown(
 @st.cache_resource
 def download_model():
     if not os.path.exists(CFG_MODEL_PATH):
-        wget.download(url, out=CFG_MODEL_PATH)
+        urllib.request.urlretrieve(url, CFG_MODEL_PATH)
 
 @st.cache_resource
 def load_model():

@@ -101,6 +101,33 @@ def main(_argv):
                     in_memory=True,
                 )
 
+        if uploaded_file is None:
+            a_c1, a_c2, a_c3 = st.columns(3)
+            a_c2.subheader("Camera Feed")
+            picture = a_c2.camera_input("Take a picture", label_visibility="collapsed")
+
+            if picture is not None:
+                file_bytes = np.asarray(bytearray(picture.read()), dtype=np.uint8)
+                picture = cv2.imdecode(file_bytes, 1)
+                picture = cv2.cvtColor(picture, cv2.COLOR_BGR2RGB)  # Convert to RGB
+
+                b_c1, b_c2 = st.columns(2)
+                processed_image, mask, person_count = detect_people(picture.copy(), model, class_list, FLAGS.confidence)
+                cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
+                blurred_image = blur_background_func(picture.copy(), mask, kernel_size, sigma)
+                cv2.imwrite('blurred_image.jpg', cv2.cvtColor(blurred_image, cv2.COLOR_RGB2BGR))
+                image_comparison(
+                    img1='processed_image.jpg',
+                    img2='blurred_image.jpg',
+                    label1="Detection",
+                    label2="FocusAI",
+                    width=1200,
+                    starting_position=50,
+                    show_labels=True,
+                    make_responsive=True,
+                    in_memory=True,
+                )
+
     if curr_state == states[1]:
         st.title(curr_state)
         st.caption("This section is about us")
@@ -114,7 +141,7 @@ def main(_argv):
 
         st.subheader("Methodology")
         st.markdown("1. Dataset Preparation: The first step in the process was to prepare the dataset for training. In this case, the CrowdHuman dataset was used. This dataset is a large and rich dataset that contains images of people in various real-world scenarios, making it ideal for training an AI model to identify people in images.")
-        st.markdown("2. Model Selection and Training: The YOLOv5 (You Only Look Once version 5) model was chosen for this task. YOLOv5 is a state-of-the-art, real-time object detection system that has been widely used in similar tasks due to its speed and accuracy. The model was trained on the prepared CrowdHuman dataset.")
+        st.markdown("2. Model Selection and Training: The YOLOv8 (You Only Look Once version 8) model was chosen for this task. YOLOv8 is a state-of-the-art, real-time object detection system that has been widely used in similar tasks due to its speed and accuracy. The model was trained on the prepared CrowdHuman dataset.")
         st.markdown("3. Model Evaluation: After training, the model was evaluated to ensure it was accurately identifying people in images and could effectively separate them from the background.")
         st.markdown("4. Application Development: Once the model was trained and evaluated, it was integrated into an application prototype. Streamlit, a fast and easy-to-use open-source framework for building machine learning and data science web applications, was used for this purpose.")
         st.markdown("5. Testing and Iteration: The prototype was then tested to ensure it was working as expected. Feedback from these tests was used to make any necessary adjustments to the model or application.")
@@ -122,8 +149,12 @@ def main(_argv):
 
         st.subheader("Applications")
         st.markdown("Security Systems: In security applications, the model can be used to protect the identities of individuals in the background of surveillance footage, focusing only on the subjects of interest.")
-        st.markdown("Augmented Reality (AR): In AR applications, this model can be used to separate real-world objects from their backgrounds, allowing for more immersive and realistic interactions with digital content.")
-        st.markdown("Photography and Videography: The model can be used to automatically create a depth-of-field effect, or ‘bokeh’, which is a popular technique in photography and videography. This effect helps to draw attention to the subject by blurring the background.")
+        st.markdown("AR Applications: In AR applications, the model can be used to selectively blur or obscure background elements, ensuring that the AR content is the focal point of the scene.")
+        st.markdown("Content Creation: For content creators and social media influencers, the model can be used to create professional-quality images and videos by blurring distracting background elements.")
+        st.markdown("Video Conferencing: In video conferencing applications, the model can be used to enhance privacy and reduce distractions by blurring the background.")
+
+        st.subheader("Conclusion")
+        st.markdown("In summary, this project represents a significant step forward in enhancing privacy and focus in visual content. By leveraging advanced AI technologies and a robust dataset, we have developed a system that can accurately identify and isolate individuals in images, blurring the background to reduce distractions and protect sensitive information. The potential applications of this technology are vast, and we are excited to continue exploring new ways to leverage it for the benefit of users.")
 
 if __name__ == '__main__':
     try:

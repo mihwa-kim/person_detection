@@ -1,7 +1,7 @@
 streamlit==1.35.0
 pillow==10.3.0
 numpy==1.26.4
-opencv-python==4.10.0.82
+opencv-python-headless
 pandas==2.2.2
 ultralytics==8.2.28
 streamlit-image-comparison==0.0.4

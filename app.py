@@ -156,6 +156,9 @@ def main(_argv):
         st.subheader("Conclusion")
         st.markdown("In summary, this project represents a significant step forward in enhancing privacy and focus in visual content. By leveraging advanced AI technologies and a robust dataset, we have developed a system that can accurately identify and isolate individuals in images, blurring the background to reduce distractions and protect sensitive information. The potential applications of this technology are vast, and we are excited to continue exploring new ways to leverage it for the benefit of users.")
 
+        st.subheader("Contact Us")
+        st.markdown("'<a href="mailto:alghk5396@gmail.com">Contact us !</a>', unsafe_allow_html=True")
+
 if __name__ == '__main__':
     try:
         app.run(main)

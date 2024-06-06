@@ -9,7 +9,7 @@ from streamlit_image_comparison import image_comparison
 from ultralytics import YOLO
 
 # Define flags
-flags.DEFINE_string('weights', 'best_yolov8nano.pt', 'path to weights file')
+flags.DEFINE_string('weights', './best_yolov8nano.pt', 'path to weights file')
 flags.DEFINE_float('confidence', 0.5, 'confidence threshold for detections')
 flags.DEFINE_string('class_list', 'body', 'list of classes to detect')
 

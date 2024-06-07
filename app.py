@@ -52,11 +52,13 @@ def main(_argv):
     img = Image.open('logo.jpg').convert("RGB")
     st.sidebar.image(img, caption='', use_column_width=True)
 
-    col1, col2 = st.sidebar.columns(2)
+    col1, col2, col3 = st.sidebar.columns(3)
     if col1.button('FocusAI', key='FocusAI'):
         curr_state = states[0]
     if col2.button('About Us', key='About Us'):
         curr_state = states[1]
+    if col3.button('Concept Video', key='Concept Video'):
+        curr_state = states[2]
 
     st.sidebar.markdown('---')
 
@@ -138,7 +140,7 @@ def main(_argv):
         team_col3.image(Image.open('dylan.jpeg').convert("RGB"), caption='Gia (Dylan) Bach Le', use_column_width=True)
         st.subheader("The objective")
         st.markdown("The objective is to enhance privacy and focus in visual content. By identifying and isolating individuals in the image, the model ensures that the viewer's attention is drawn primarily to the subjects. The blurring of the background reduces distractions, providing a cleaner, more professional appearance. This can be particularly useful in applications such as video conferencing, photography, and social media, where the focus is often on the individuals present and not the environment around them. Additionally, by blurring the background, the model can help protect sensitive or private information that might inadvertently be captured in the image.")
-
+        
         st.subheader("Methodology")
         st.markdown("1. Dataset Preparation: The first step in the process was to prepare the dataset for training. In this case, the CrowdHuman dataset was used. This dataset is a large and rich dataset that contains images of people in various real-world scenarios, making it ideal for training an AI model to identify people in images.")
         st.markdown("2. Model Selection and Training: The YOLOv8 (You Only Look Once version 8) model was chosen for this task. YOLOv8 is a state-of-the-art, real-time object detection system that has been widely used in similar tasks due to its speed and accuracy. The model was trained on the prepared CrowdHuman dataset.")
@@ -155,9 +157,15 @@ def main(_argv):
 
         st.subheader("Conclusion")
         st.markdown("In summary, this project represents a significant step forward in enhancing privacy and focus in visual content. By leveraging advanced AI technologies and a robust dataset, we have developed a system that can accurately identify and isolate individuals in images, blurring the background to reduce distractions and protect sensitive information. The potential applications of this technology are vast, and we are excited to continue exploring new ways to leverage it for the benefit of users.")
-
+        
         st.subheader("Contact Us")
         st.markdown('<a href="mailto:alghk5396@gmail.com">Contact us !</a>', unsafe_allow_html=True)
+    
+    if curr_state == states[2]:
+        st.title(curr_state)
+        VIDEO_URL = "https://www.youtube.com/watch?v=xTKLFv0QZu8&list=LL&index=4&t=3s"
+        st.video(VIDEO_URL, subtitles="subtitles.vtt")
+
 
 if __name__ == '__main__':
     try:

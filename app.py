@@ -161,7 +161,7 @@ def main(_argv):
     
         st.subheader("Concept Video")
         VIDEO_URL = "https://www.youtube.com/watch?v=xTKLFv0QZu8&list=LL&index=4&t=3s"
-        st.video(VIDEO_URL, subtitles="subtitles.vtt")
+        st.video(VIDEO_URL)
 
 
 if __name__ == '__main__':

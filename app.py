@@ -52,13 +52,11 @@ def main(_argv):
     img = Image.open('logo.jpg').convert("RGB")
     st.sidebar.image(img, caption='', use_column_width=True)
 
-    col1, col2, col3 = st.sidebar.columns(3)
+    col1, col2 = st.sidebar.columns(2)
     if col1.button('FocusAI', key='FocusAI'):
         curr_state = states[0]
     if col2.button('About Us', key='About Us'):
         curr_state = states[1]
-    if col3.button('Concept Video', key='Concept Video'):
-        curr_state = states[2]
 
     st.sidebar.markdown('---')
 
@@ -161,8 +159,7 @@ def main(_argv):
         st.subheader("Contact Us")
         st.markdown('<a href="mailto:alghk5396@gmail.com">Contact us !</a>', unsafe_allow_html=True)
     
-    if curr_state == states[2]:
-        st.title(curr_state)
+        st.subheader("Concept Video")
         VIDEO_URL = "https://www.youtube.com/watch?v=xTKLFv0QZu8&list=LL&index=4&t=3s"
         st.video(VIDEO_URL, subtitles="subtitles.vtt")
 

@@ -84,17 +84,17 @@ def main(_argv):
 
             if st.sidebar.button('Detect People'):
                 processed_image, mask, person_count = detect_people(image.copy(), model, class_list, FLAGS.confidence)
+                blurred_image = blur_background_func(image.copy(), mask, kernel_size, sigma)
+                
                 cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
-                if blur_background:
-                    blurred_image = blur_background_func(image.copy(), mask, kernel_size, sigma)
-                    cv2.imwrite('blurred_image.jpg', cv2.cvtColor(blurred_image, cv2.COLOR_RGB2BGR))
+                cv2.imwrite('blurred_image.jpg', cv2.cvtColor(blurred_image, cv2.COLOR_RGB2BGR))
 
-                st.subheader("People Detection vs Focus AI" if blur_background else "Original vs People Detection")
+                st.subheader("People Detection vs Focus AI")
                 image_comparison(
-                    img1='processed_image.jpg' if blur_background else 'original_image.jpg',
-                    img2='blurred_image.jpg' if blur_background else 'processed_image.jpg',
-                    label1="Detection" if blur_background else "Original",
-                    label2="FocusAI" if blur_background else "Detection",
+                    img1='processed_image.jpg',
+                    img2='blurred_image.jpg',
+                    label1="Detection",
+                    label2="FocusAI",
                     width=1200,
                     starting_position=50,
                     show_labels=True,

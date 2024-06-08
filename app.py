@@ -73,9 +73,10 @@ def main(_argv):
         class_list = [FLAGS.class_list]
 
         if uploaded_file is not None:
-            image = Image.open(uploaded_file).convert("RGB")
-            image = np.array(image)
-            cv2.imwrite('original_image.jpg', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+            file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+            image = cv2.imdecode(file_bytes, 1)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
+
             u_col1, u_col2, u_col3 = st.columns(3)
             with u_col2:
                 st.subheader("Uploaded Image:")

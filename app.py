@@ -13,6 +13,14 @@ flags.DEFINE_string('weights', './best_yolov8nano.pt', 'path to weights file')
 flags.DEFINE_float('confidence', 0.5, 'confidence threshold for detections')
 flags.DEFINE_string('class_list', 'body', 'list of classes to detect')
 
+def resize_image(image, target_width):
+    height, width = image.shape[:2]
+    aspect_ratio = height / width
+    new_width = target_width
+    new_height = int(target_width * aspect_ratio)
+    resized_image = cv2.resize(image, (new_width, new_height))
+    return resized_image
+
 def detect_people(image, model, class_list, confidence):
     image_color = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = model.predict(image, conf=confidence)
@@ -72,34 +80,42 @@ def main(_argv):
         model = YOLO(FLAGS.weights)
         class_list = [FLAGS.class_list]
 
+        def process_and_display_image(image):
+            image = np.array(image)
+            image = resize_image(image, target_width=800)
+            cv2.imwrite('original_image.jpg', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+
+            processed_image, mask, person_count = detect_people(image.copy(), model, class_list, FLAGS.confidence)
+            processed_image = resize_image(processed_image, target_width=800)
+            cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
+
+            if blur_background:
+                blurred_image = blur_background_func(image.copy(), mask, kernel_size, sigma)
+                blurred_image = resize_image(blurred_image, target_width=800)
+                cv2.imwrite('blurred_image.jpg', cv2.cvtColor(blurred_image, cv2.COLOR_RGB2BGR))
+
+            st.subheader("People Detection vs Focus AI" if blur_background else "Original vs People Detection")
+            image_comparison(
+                img1='processed_image.jpg' if blur_background else 'original_image.jpg',
+                img2='blurred_image.jpg' if blur_background else 'processed_image.jpg',
+                label1="Detection" if blur_background else "Original",
+                label2="FocusAI" if blur_background else "Detection",
+                width=1200,
+                starting_position=50,
+                show_labels=True,
+                make_responsive=True,
+                in_memory=True,
+            )
+
         if uploaded_file is not None:
             image = Image.open(uploaded_file).convert("RGB")
-            image = np.array(image)
-            cv2.imwrite('original_image.jpg', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
             u_col1, u_col2, u_col3 = st.columns(3)
             with u_col2:
                 st.subheader("Uploaded Image:")
                 st.image(image, caption='Uploaded Image', use_column_width=True)
 
             if st.sidebar.button('Detect People'):
-                processed_image, mask, person_count = detect_people(image.copy(), model, class_list, FLAGS.confidence)
-                cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
-                if blur_background:
-                    blurred_image = blur_background_func(image.copy(), mask, kernel_size, sigma)
-                    cv2.imwrite('blurred_image.jpg', cv2.cvtColor(blurred_image, cv2.COLOR_RGB2BGR))
-
-                st.subheader("People Detection vs Focus AI" if blur_background else "Original vs People Detection")
-                image_comparison(
-                    img1='processed_image.jpg' if blur_background else 'original_image.jpg',
-                    img2='blurred_image.jpg' if blur_background else 'processed_image.jpg',
-                    label1="Detection" if blur_background else "Original",
-                    label2="FocusAI" if blur_background else "Detection",
-                    width=1200,
-                    starting_position=50,
-                    show_labels=True,
-                    make_responsive=True,
-                    in_memory=True,
-                )
+                process_and_display_image(image)
 
         if uploaded_file is None:
             a_c1, a_c2, a_c3 = st.columns(3)
@@ -111,22 +127,8 @@ def main(_argv):
                 picture = cv2.imdecode(file_bytes, 1)
                 picture = cv2.cvtColor(picture, cv2.COLOR_BGR2RGB)  # Convert to RGB
 
-                b_c1, b_c2 = st.columns(2)
-                processed_image, mask, person_count = detect_people(picture.copy(), model, class_list, FLAGS.confidence)
-                cv2.imwrite('processed_image.jpg', cv2.cvtColor(processed_image, cv2.COLOR_RGB2BGR))
-                blurred_image = blur_background_func(picture.copy(), mask, kernel_size, sigma)
-                cv2.imwrite('blurred_image.jpg', cv2.cvtColor(blurred_image, cv2.COLOR_RGB2BGR))
-                image_comparison(
-                    img1='processed_image.jpg',
-                    img2='blurred_image.jpg',
-                    label1="Detection",
-                    label2="FocusAI",
-                    width=1200,
-                    starting_position=50,
-                    show_labels=True,
-                    make_responsive=True,
-                    in_memory=True,
-                )
+                if st.sidebar.button('Detect People'):
+                    process_and_display_image(picture)
 
     if curr_state == states[1]:
         st.title(curr_state)
